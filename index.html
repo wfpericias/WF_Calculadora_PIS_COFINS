@@ -361,9 +361,8 @@ function mascaraCNPJ(el){
 }
 function validarCNPJ(cnpj){
   const c=cnpj.replace(/\D/g,"");
-  if(c.length!==14||/^(\d)\1+$/.test(c))return false;
-  const calc=(s,n)=>{let t=0;for(let i=0;i<n-1;i++)t+=parseInt(s[i])*(n-i);const r=t%11;return r<2?0:11-r;};
-  return calc(c,10)===parseInt(c[12])&&calc(c,11)===parseInt(c[13]);
+  if(c.length!==14) return false;
+  return !/^(\d)\1+$/.test(c);
 }
 
 function setStep(n){
