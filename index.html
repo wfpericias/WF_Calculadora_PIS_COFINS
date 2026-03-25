@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Segregação — WF Perícias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:    #0d1f3c;
+  --navy2:   #132a50;
+  --navy3:   #1a3460;
+  --gold:    #c9a84c;
+  --gold2:   #e8c96a;
+  --gold3:   #f5e199;
+  --green:   #4caf7d;
+  --red:     #e05c5c;
+  --gray:    #7a8faa;
+  --light:   #d0daea;
+  --white:   #f4f8ff;
+  --border:  rgba(201,168,76,0.18);
+  --shadow:  0 8px 40px rgba(0,0,0,0.45);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--navy);
+  color:var(--white);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── BACKGROUND DECORATIVO ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 80% 20%, rgba(201,168,76,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 10% 80%, rgba(26,52,96,0.5) 0%, transparent 60%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── LAYOUT PRINCIPAL ── */
+.wrapper{
+  position:relative;z-index:1;
+  max-width:620px;
+  margin:0 auto;
+  padding:40px 20px 80px;
+}
+
+/* ── LOGO / TOPO ── */
+.logo{
+  text-align:center;
+  margin-bottom:36px;
+  animation:fadeDown .6s ease both;
+}
+.logo-nome{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(22px,5vw,30px);
+  font-weight:700;
+  color:var(--gold2);
+  letter-spacing:.06em;
+}
+.logo-sub{
+  font-size:11px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--gray);
+  margin-top:3px;
+}
+.logo-divider{
+  width:48px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  margin:12px auto 0;
+}
+
+/* ── PROGRESS STEPS ── */
+.steps{
+  display:flex;align-items:center;justify-content:center;
+  gap:0;margin-bottom:32px;
+  animation:fadeDown .6s .1s ease both;
+}
+.step{display:flex;flex-direction:column;align-items:center;gap:5px;}
+.step-dot{
+  width:34px;height:34px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.12);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:var(--gray);
+  transition:all .35s ease;background:rgba(255,255,255,0.04);
+}
+.step.active .step-dot{background:var(--gold);border-color:var(--gold);color:var(--navy);box-shadow:0 0 18px rgba(201,168,76,0.45);}
+.step.done   .step-dot{background:rgba(76,175,125,0.15);border-color:var(--green);color:var(--green);}
+.step-label{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);}
+.step.active .step-label{color:var(--gold);}
+.step.done   .step-label{color:var(--green);}
+.step-line{
+  width:64px;height:1px;
+  background:rgba(255,255,255,0.08);
+  margin:0 4px 18px;
+  transition:background .35s ease;
+}
+.step-line.done{background:var(--green);}
+
+/* ── CARD ── */
+.card{
+  background:rgba(255,255,255,0.035);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:36px 32px;
+  backdrop-filter:blur(12px);
+  box-shadow:var(--shadow);
+  animation:fadeUp .55s .15s ease both;
+}
+@media(max-width:480px){.card{padding:28px 20px;}}
+
+/* ── SEÇÕES ── */
+.section{display:block;}
+.section.hidden{display:none;}
+
+/* ── HERO (fase 1) ── */
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(201,168,76,0.1);
+  border:1px solid rgba(201,168,76,0.25);
+  border-radius:100px;
+  padding:6px 14px;
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold2);margin-bottom:22px;
+}
+.hero-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(26px,6vw,36px);
+  font-weight:700;
+  line-height:1.2;
+  color:var(--white);
+  margin-bottom:8px;
+}
+.hero-title span{color:var(--gold2);font-style:italic;}
+.hero-sub{
+  font-size:14px;color:var(--gray);line-height:1.6;
+  margin-bottom:28px;
+}
+
+/* BENEFÍCIOS */
+.benefits{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-bottom:28px;
+}
+@media(max-width:400px){.benefits{grid-template-columns:1fr;}}
+.benefit{
+  display:flex;align-items:flex-start;gap:10px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:10px;padding:12px;
+}
+.benefit-icon{font-size:18px;line-height:1;flex-shrink:0;margin-top:1px;}
+.benefit-text{font-size:12px;color:var(--light);line-height:1.45;}
+.benefit-text strong{display:block;font-size:13px;color:var(--white);margin-bottom:2px;}
+
+/* SEPARADOR */
+.divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--border),transparent);
+  margin:24px 0;
+}
+
+/* ── FORMULÁRIO ── */
+.form-title{
+  font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:18px;font-weight:600;
+}
+.field{margin-bottom:16px;}
+.field label{
+  display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gray);margin-bottom:6px;font-weight:500;
+}
+.field input{
+  width:100%;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:9px;
+  padding:13px 16px;
+  color:var(--white);
+  font-family:'Outfit',sans-serif;
+  font-size:14px;
+  transition:border-color .25s,box-shadow .25s;
+  outline:none;
+}
+.field input::placeholder{color:rgba(255,255,255,0.22);}
+.field input:focus{
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,0.12);
+}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:400px){.row-2{grid-template-columns:1fr;}}
+
+/* ERRO */
+.err{
+  font-size:11px;color:var(--red);margin-top:5px;
+  display:none;
+}
+.err.visible{display:block;}
+
+/* ── BOTÃO PRINCIPAL ── */
+.btn{
+  width:100%;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:var(--navy);
+  border:none;border-radius:10px;
+  padding:15px 24px;
+  font-family:'Outfit',sans-serif;
+  font-size:15px;font-weight:700;
+  letter-spacing:.03em;
+  cursor:pointer;
+  transition:opacity .2s,transform .15s,box-shadow .2s;
+  box-shadow:0 4px 20px rgba(201,168,76,0.3);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:8px;
+}
+.btn:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 6px 28px rgba(201,168,76,0.4);}
+.btn:active{transform:translateY(0);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-ghost{
+  width:100%;background:transparent;
+  border:1px solid rgba(255,255,255,0.1);
+  color:var(--gray);border-radius:10px;
+  padding:12px;font-family:'Outfit',sans-serif;
+  font-size:13px;cursor:pointer;
+  transition:border-color .2s,color .2s;margin-top:10px;
+}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ── SPINNER ── */
+.spinner{
+  width:16px;height:16px;
+  border:2px solid rgba(13,31,60,0.3);
+  border-top-color:var(--navy);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  display:inline-block;
+}
+
+/* ── CAMPOS MONETÁRIOS (fase 2) ── */
+.input-money{position:relative;}
+.input-money .prefix{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:13px;color:var(--gray);font-weight:600;pointer-events:none;
+}
+.input-money input{padding-left:42px !important;}
+
+/* ── INFO BOX ── */
+.info-box{
+  background:rgba(201,168,76,0.07);
+  border:1px solid rgba(201,168,76,0.2);
+  border-radius:10px;
+  padding:14px 16px;
+  font-size:12px;color:var(--light);line-height:1.6;
+  margin-bottom:20px;
+}
+.info-box strong{color:var(--gold2);}
+
+/* ── RESULTADO (fase 3) ── */
+.result-hero{
+  text-align:center;
+  padding:28px 0 24px;
+}
+.result-badge{
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:10px;
+}
+.result-economia{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(42px,10vw,64px);
+  font-weight:700;
+  color:var(--green);
+  line-height:1;
+  margin-bottom:4px;
+}
+.result-economia-label{font-size:13px;color:var(--gray);}
+.result-economia-anual{
+  font-size:13px;color:var(--light);
+  margin-top:6px;
+}
+
+.result-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin:24px 0;
+}
+@media(max-width:400px){.result-grid{grid-template-columns:1fr;}}
+.result-item{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:10px;
+  padding:14px;
+}
+.result-item-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);margin-bottom:5px;}
+.result-item-value{font-size:18px;font-weight:600;color:var(--white);}
+.result-item.highlight{
+  border-color:rgba(201,168,76,0.3);
+  background:rgba(201,168,76,0.07);
+}
+.result-item.highlight .result-item-value{color:var(--gold2);}
+.result-item.green{border-color:rgba(76,175,125,0.3);background:rgba(76,175,125,0.07);}
+.result-item.green .result-item-value{color:var(--green);}
+
+.result-table{
+  width:100%;border-collapse:collapse;margin:16px 0;
+}
+.result-table tr{border-bottom:1px solid rgba(255,255,255,0.05);}
+.result-table tr:last-child{border-bottom:none;}
+.result-table td{padding:9px 4px;font-size:13px;}
+.result-table td:first-child{color:var(--gray);}
+.result-table td:last-child{text-align:right;font-weight:600;color:var(--white);}
+
+.aviso-box{
+  background:rgba(76,175,125,0.07);
+  border:1px solid rgba(76,175,125,0.2);
+  border-radius:10px;padding:14px 16px;
+  font-size:12px;color:var(--light);line-height:1.6;
+  margin-bottom:20px;
+}
+.aviso-box strong{color:var(--green);}
+
+.btn-wpp{
+  width:100%;
+  background:linear-gradient(135deg,#25D366,#20b858);
+  color:#fff;border:none;border-radius:10px;
+  padding:15px 24px;
+  font-family:'Outfit',sans-serif;
+  font-size:15px;font-weight:700;
+  cursor:pointer;text-decoration:none;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:opacity .2s,transform .15s;
+  box-shadow:0 4px 20px rgba(37,211,102,0.25);
+  margin-bottom:10px;
+}
+.btn-wpp:hover{opacity:.9;transform:translateY(-1px);}
+
+/* ── ALERTA ── */
+.alerta{
+  background:rgba(224,92,92,0.1);
+  border:1px solid rgba(224,92,92,0.3);
+  border-radius:10px;padding:12px 16px;
+  font-size:13px;color:#f5a0a0;
+  margin-bottom:16px;display:none;
+}
+.alerta.visible{display:block;}
+
+/* ── RODAPÉ ── */
+.footer{
+  text-align:center;margin-top:32px;
+  font-size:11px;color:rgba(122,143,170,0.6);
+  line-height:1.7;
+  animation:fadeUp .5s .4s ease both;
+}
+
+/* ── ANIMAÇÕES ── */
+@keyframes fadeUp  {from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin    {to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- LOGO -->
+  <div class="logo">
+    <div class="logo-nome">WF Perícias</div>
+    <div class="logo-sub">Consultoria Tributária · Campo Grande / MS</div>
+    <div class="logo-divider"></div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-dot">1</div><span class="step-label">Acesso</span></div>
+    <div class="step-line" id="line1"></div>
+    <div class="step" id="step2"><div class="step-dot">2</div><span class="step-label">Dados</span></div>
+    <div class="step-line" id="line2"></div>
+    <div class="step" id="step3"><div class="step-dot">3</div><span class="step-label">Resultado</span></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       FASE 1 — CAPTURA DO LEAD
+  ══════════════════════════════════════════ -->
+  <div class="card">
+
+    <div id="fase1" class="section">
+      <div class="hero-badge">🧮 Ferramenta Gratuita</div>
+      <h1 class="hero-title">
+        Sua empresa paga<br><span>imposto a mais</span> no Simples?
+      </h1>
+      <p class="hero-sub">
+        Descubra em 2 minutos quanto seu bar, restaurante ou mercado pode economizar por mês segregando bebidas frias e cigarros no PGDAS.
+      </p>
+
+      <div class="benefits">
+        <div class="benefit">
+          <div class="benefit-icon">📊</div>
+          <div class="benefit-text"><strong>Alíquota efetiva real</strong>Com segregação de PIS/COFINS monofásico</div>
+        </div>
+        <div class="benefit">
+          <div class="benefit-icon">💰</div>
+          <div class="benefit-text"><strong>Economia mensal</strong>Quanto você deixa de pagar a mais todo mês</div>
+        </div>
+        <div class="benefit">
+          <div class="benefit-icon">📅</div>
+          <div class="benefit-text"><strong>Projeção anual</strong>Impacto acumulado nos próximos 12 meses</div>
+        </div>
+        <div class="benefit">
+          <div class="benefit-icon">🔒</div>
+          <div class="benefit-text"><strong>100% gratuito</strong>Sem compromisso, resultado na hora</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-title">Preencha para acessar</div>
+
+      <div id="alert1" class="alerta"></div>
+
+      <div class="field">
+        <label>Nome do responsável *</label>
+        <input type="text" id="nomeResponsavel" placeholder="Ex: João Silva" autocomplete="name">
+        <div class="err" id="err-nome">Por favor, informe seu nome.</div>
+      </div>
+      <div class="field">
+        <label>Nome do estabelecimento</label>
+        <input type="text" id="nomeEstabelecimento" placeholder="Ex: Bar do João">
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label>Telefone / WhatsApp</label>
+          <input type="tel" id="telefone" placeholder="(67) 99999-0000" maxlength="15">
+        </div>
+        <div class="field">
+          <label>CNPJ</label>
+          <input type="text" id="cnpj" placeholder="00.000.000/0001-00" maxlength="18">
+          <div class="err" id="err-cnpj">CNPJ inválido.</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>E-mail *</label>
+        <input type="email" id="email" placeholder="seu@email.com.br" autocomplete="email">
+        <div class="err" id="err-email">Informe um e-mail válido.</div>
+      </div>
+
+      <button class="btn" id="btnAcesso" onclick="enviarLead()">
+        Acessar Calculadora →
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FASE 2 — DADOS PARA O CÁLCULO
+    ══════════════════════════════════════════ -->
+    <div id="fase2" class="section hidden">
+      <div class="form-title">📋 Dados do faturamento</div>
+
+      <div class="info-box">
+        <strong>📌 Onde encontrar esses valores?</strong><br>
+        O <strong>RBT12</strong> está no seu PGDAS-D (campo "Receita Bruta Total dos últimos 12 meses").<br>
+        Os demais valores estão nos seus relatórios de vendas ou no sistema de caixa.
+      </div>
+
+      <div id="alert2" class="alerta"></div>
+
+      <div class="field">
+        <label>RBT12 — Receita Bruta Total dos últimos 12 meses *</label>
+        <div class="input-money">
+          <span class="prefix">R$</span>
+          <input type="text" id="rbt12" placeholder="0,00" oninput="mascaraMoeda(this)" inputmode="decimal">
+        </div>
+        <div class="err" id="err-rbt12">Informe o RBT12.</div>
+      </div>
+      <div class="field">
+        <label>Faturamento total do período (mês) *</label>
+        <div class="input-money">
+          <span class="prefix">R$</span>
+          <input type="text" id="fatTotal" placeholder="0,00" oninput="mascaraMoeda(this)" inputmode="decimal">
+        </div>
+        <div class="err" id="err-fat">Informe o faturamento total.</div>
+      </div>
+      <div class="field">
+        <label>Faturamento de bebida fria + cigarro no mesmo período *</label>
+        <div class="input-money">
+          <span class="prefix">R$</span>
+          <input type="text" id="fatBebida" placeholder="0,00" oninput="mascaraMoeda(this)" inputmode="decimal">
+        </div>
+        <div class="err" id="err-bebida">Informe o valor de bebida/cigarro.</div>
+      </div>
+
+      <button class="btn" onclick="calcular()">Calcular Alíquota Efetiva →</button>
+      <button class="btn-ghost" onclick="voltarFase1()">← Voltar</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         FASE 3 — RESULTADO
+    ══════════════════════════════════════════ -->
+    <div id="fase3" class="section hidden">
+
+      <div class="result-hero">
+        <div class="result-badge">💰 Economia Mensal Estimada</div>
+        <div class="result-economia" id="res-economia">R$ 0,00</div>
+        <div class="result-economia-label">com a segregação correta no PGDAS</div>
+        <div class="result-economia-anual" id="res-economia-anual"></div>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-item highlight">
+          <div class="result-item-label">Alíquota Nominal</div>
+          <div class="result-item-value" id="res-nominal">—</div>
+        </div>
+        <div class="result-item green">
+          <div class="result-item-label">Alíquota Efetiva</div>
+          <div class="result-item-value" id="res-efetiva">—</div>
+        </div>
+        <div class="result-item">
+          <div class="result-item-label">Desconto obtido</div>
+          <div class="result-item-value" id="res-desconto" style="color:var(--green)">—</div>
+        </div>
+        <div class="result-item">
+          <div class="result-item-label">Faixa Simples</div>
+          <div class="result-item-value" style="font-size:13px" id="res-faixa">—</div>
+        </div>
+      </div>
+
+      <table class="result-table">
+        <tr>
+          <td>Imposto sem segregação</td>
+          <td id="res-imposto-sem">—</td>
+        </tr>
+        <tr>
+          <td>Imposto com segregação</td>
+          <td id="res-imposto-com" style="color:var(--green)">—</td>
+        </tr>
+      </table>
+
+      <div class="aviso-box">
+        <strong>⚠️ Simulação estimativa.</strong> Para levantamento completo dos últimos 5 anos e solicitação formal de restituição, entre em contato com a WF Perícias.
+      </div>
+
+      <a id="btnWpp" href="#" target="_blank" class="btn-wpp">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.557 4.136 1.527 5.874L0 24l6.278-1.506A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.896 0-3.673-.5-5.213-1.373l-.374-.222-3.726.894.944-3.62-.244-.387A9.94 9.94 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        Solicitar Análise Completa Gratuita
+      </a>
+
+      <button class="btn-ghost" onclick="reiniciar()">↺ Fazer nova simulação</button>
+    </div>
+
+  </div><!-- /.card -->
+
+  <div class="footer">
+    WF Perícias e Consultoria Ltda · CNPJ 63.685.594/0001-31<br>
+    CRC-MS 015.222/O-8 · CNPC 7.997 · Campo Grande / MS
+  </div>
+
+</div><!-- /.wrapper -->
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIGURAÇÕES — altere apenas aqui
+// ═══════════════════════════════════════════════════════════
+const SCRIPT_URL = "COLE_A_URL_DO_GAS_AQUI";
+const WPP_NUMBER = "5567992238053";
+
+// ═══════════════════════════════════════════════════════════
+// TABELA SIMPLES NACIONAL — ANEXO I (Comércio)
+// ═══════════════════════════════════════════════════════════
+const FAIXAS = [
+  { limite:  180000, aliquota:  4.00, deducao:       0, nome:"1ª Faixa (até R$ 180k)"  },
+  { limite:  360000, aliquota:  7.30, deducao:    5940, nome:"2ª Faixa (até R$ 360k)"  },
+  { limite:  720000, aliquota:  9.50, deducao:   13860, nome:"3ª Faixa (até R$ 720k)"  },
+  { limite: 1800000, aliquota: 10.70, deducao:   22500, nome:"4ª Faixa (até R$ 1,8M)"  },
+  { limite: 3600000, aliquota: 14.30, deducao:   87300, nome:"5ª Faixa (até R$ 3,6M)"  },
+  { limite: 4800000, aliquota: 19.00, deducao:  378000, nome:"6ª Faixa (até R$ 4,8M)"  },
+];
+
+// ═══════════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════════
+let dadosLead = {};
+
+// ═══════════════════════════════════════════════════════════
+// UTILITÁRIOS
+// ═══════════════════════════════════════════════════════════
+function mascaraMoeda(el){
+  let v=el.value.replace(/\D/g,"");
+  if(!v){el.value="";return;}
+  el.value=(parseInt(v)/100).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function parseMoeda(s){return parseFloat((s||"").replace(/\./g,"").replace(",","."))||0;}
+function fmtMoeda(v){return "R$ "+v.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtPct(v){return v.toFixed(2).replace(".",",")+"%";}
+
+function mascaraCNPJ(el){
+  let v=el.value.replace(/\D/g,"").slice(0,14);
+  if(v.length===14)     v=v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,"$1.$2.$3/$4-$5");
+  else if(v.length>8)   v=v.replace(/^(\d{2})(\d{3})(\d{3})(\d+)$/,"$1.$2.$3/$4");
+  else if(v.length>5)   v=v.replace(/^(\d{2})(\d{3})(\d+)$/,"$1.$2.$3");
+  else if(v.length>2)   v=v.replace(/^(\d{2})(\d+)$/,"$1.$2");
+  el.value=v;
+}
+function validarCNPJ(cnpj){
+  const c=cnpj.replace(/\D/g,"");
+  if(c.length!==14||/^(\d)\1+$/.test(c))return false;
+  const calc=(s,n)=>{let t=0;for(let i=0;i<n-1;i++)t+=parseInt(s[i])*(n-i);const r=t%11;return r<2?0:11-r;};
+  return calc(c,10)===parseInt(c[12])&&calc(c,11)===parseInt(c[13]);
+}
+
+function setStep(n){
+  for(let i=1;i<=3;i++){
+    const s=document.getElementById("step"+i);
+    s.classList.remove("active","done");
+    if(i<n)s.classList.add("done");
+    if(i===n)s.classList.add("active");
+  }
+  document.getElementById("line1").classList.toggle("done",n>1);
+  document.getElementById("line2").classList.toggle("done",n>2);
+}
+
+function mostrarAlerta(id,msg){
+  const el=document.getElementById(id);
+  el.textContent=msg;el.classList.add("visible");
+}
+
+// ═══════════════════════════════════════════════════════════
+// FASE 1 — ENVIO DO LEAD (NUNCA TRAVA)
+// ═══════════════════════════════════════════════════════════
+function enviarLead(){
+  const nome  = document.getElementById("nomeResponsavel").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const cnpj  = document.getElementById("cnpj").value.trim();
+
+  // Limpa erros
+  ["err-nome","err-email","err-cnpj"].forEach(id=>document.getElementById(id).classList.remove("visible"));
+  document.getElementById("alert1").classList.remove("visible");
+
+  let ok=true;
+  if(!nome)                                         {document.getElementById("err-nome").classList.add("visible");  ok=false;}
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){document.getElementById("err-email").classList.add("visible");ok=false;}
+  if(cnpj&&!validarCNPJ(cnpj))                     {document.getElementById("err-cnpj").classList.add("visible");  ok=false;}
+  if(!ok)return;
+
+  dadosLead={
+    nomeResponsavel:     nome,
+    nomeEstabelecimento: document.getElementById("nomeEstabelecimento").value.trim(),
+    cnpj, telefone:      document.getElementById("telefone").value.trim(),
+    email
+  };
+
+  // ── AVANÇA SEM ESPERAR O GAS ──────────────────────────────
+  avancarFase2();
+
+  // Envia ao GAS em background — fire-and-forget (sem mode no-cors problem)
+  if(SCRIPT_URL && !SCRIPT_URL.includes("COLE_A_URL")){
+    fetch(SCRIPT_URL, {
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({tipo:"lead", ...dadosLead})
+    }).catch(()=>{});
+  }
+}
+
+function avancarFase2(){
+  document.getElementById("fase1").classList.add("hidden");
+  document.getElementById("fase2").classList.remove("hidden");
+  setStep(2);window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function voltarFase1(){
+  document.getElementById("fase2").classList.add("hidden");
+  document.getElementById("fase1").classList.remove("hidden");
+  setStep(1);window.scrollTo({top:0,behavior:"smooth"});
+}
+
+// ═══════════════════════════════════════════════════════════
+// FASE 2 — CÁLCULO
+// ═══════════════════════════════════════════════════════════
+function calcular(){
+  const rbt12   = parseMoeda(document.getElementById("rbt12").value);
+  const fatTot  = parseMoeda(document.getElementById("fatTotal").value);
+  const fatBeb  = parseMoeda(document.getElementById("fatBebida").value);
+
+  ["err-rbt12","err-fat","err-bebida"].forEach(id=>document.getElementById(id).classList.remove("visible"));
+  document.getElementById("alert2").classList.remove("visible");
+
+  let ok=true;
+  if(!rbt12)  {document.getElementById("err-rbt12").classList.add("visible"); ok=false;}
+  if(!fatTot) {document.getElementById("err-fat").classList.add("visible");   ok=false;}
+  if(!document.getElementById("fatBebida").value){document.getElementById("err-bebida").classList.add("visible");ok=false;}
+  if(!ok)return;
+
+  if(fatBeb>fatTot){
+    mostrarAlerta("alert2","O faturamento de bebida/cigarro não pode ser maior que o total.");
+    return;
+  }
+
+  // Determina faixa
+  let faixa=FAIXAS[FAIXAS.length-1];
+  for(const f of FAIXAS){if(rbt12<=f.limite){faixa=f;break;}}
+
+  // Alíquota nominal (fórmula Simples Nacional)
+  const aliqNom = ((rbt12*faixa.aliquota/100)-faixa.deducao)/rbt12*100;
+
+  // Base de cálculo após segregação
+  const fatBase   = fatTot - fatBeb;
+  const impSem    = fatTot  * aliqNom/100;   // sem segregação
+  const impCom    = fatBase * aliqNom/100;   // com segregação
+  const economia  = impSem - impCom;
+  const aliqEf    = impCom / fatTot * 100;
+  const desconto  = aliqNom - aliqEf;
+  const economiaAnual = economia*12;
+
+  // Preenche resultado
+  document.getElementById("res-nominal").textContent     = fmtPct(aliqNom);
+  document.getElementById("res-efetiva").textContent     = fmtPct(aliqEf);
+  document.getElementById("res-desconto").textContent    = "−"+fmtPct(desconto);
+  document.getElementById("res-faixa").textContent       = faixa.nome;
+  document.getElementById("res-imposto-sem").textContent = fmtMoeda(impSem);
+  document.getElementById("res-imposto-com").textContent = fmtMoeda(impCom);
+  document.getElementById("res-economia").textContent    = fmtMoeda(economia);
+  document.getElementById("res-economia-anual").textContent = "Projeção anual: "+fmtMoeda(economiaAnual);
+
+  // Link WhatsApp
+  const msg=encodeURIComponent(
+    "Olá, Wesley! Fiz a simulação pela Calculadora da WF Perícias.\n"+
+    "Estabelecimento: "+(dadosLead.nomeEstabelecimento||dadosLead.nomeResponsavel)+"\n"+
+    "Economia estimada: "+fmtMoeda(economia)+"/mês\n"+
+    "Gostaria de solicitar a análise completa."
+  );
+  document.getElementById("btnWpp").href="https://wa.me/"+WPP_NUMBER+"?text="+msg;
+
+  // Avança para resultado
+  document.getElementById("fase2").classList.add("hidden");
+  document.getElementById("fase3").classList.remove("hidden");
+  setStep(3);window.scrollTo({top:0,behavior:"smooth"});
+
+  // Envia cálculo ao GAS em background — fire-and-forget
+  if(SCRIPT_URL && !SCRIPT_URL.includes("COLE_A_URL")){
+    fetch(SCRIPT_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain"},
+      body:JSON.stringify({
+        tipo:"calculo", ...dadosLead,
+        rbt12, faturamentoTotal:fatTot, faturamentoBebida:fatBeb,
+        aliquotaNominal:aliqNom, percentualDesconto:desconto,
+        aliquotaEfetiva:aliqEf, valorImpostoTotal:impSem,
+        valorImpostoBebida:impCom, economia, faixaSimples:faixa.nome
+      })
+    }).catch(()=>{});
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// REINICIAR
+// ═══════════════════════════════════════════════════════════
+function reiniciar(){
+  dadosLead={};
+  ["nomeResponsavel","nomeEstabelecimento","cnpj","telefone","email",
+   "rbt12","fatTotal","fatBebida"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.value="";
+  });
+  document.getElementById("fase3").classList.add("hidden");
+  document.getElementById("fase1").classList.remove("hidden");
+  setStep(1);window.scrollTo({top:0,behavior:"smooth"});
+}
+
+// ═══════════════════════════════════════════════════════════
+// MÁSCARAS
+// ═══════════════════════════════════════════════════════════
+document.getElementById("telefone").addEventListener("input",function(){
+  let v=this.value.replace(/\D/g,"").slice(0,11);
+  if(v.length>10)     v=v.replace(/^(\d{2})(\d{5})(\d{4})$/,"($1) $2-$3");
+  else if(v.length>6) v=v.replace(/^(\d{2})(\d{4})(\d*)$/,"($1) $2-$3");
+  else if(v.length>2) v=v.replace(/^(\d{2})(\d*)$/,"($1) $2");
+  this.value=v;
+});
+document.getElementById("cnpj").addEventListener("input",function(){mascaraCNPJ(this);});
+</script>
+</body>
+</html>
